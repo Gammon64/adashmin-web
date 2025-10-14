@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { buildFuncionario } from "../_types/funcionario";
+import { buildFuncionario, FuncionarioDao } from "../_types/funcionario";
+
+const URL_BASE = `${process.env.NEXT_PUBLIC_BACKEND_URL}/funcionario`;
 
 /**
  * Lista todos os funcionários.
@@ -11,44 +13,37 @@ import { buildFuncionario } from "../_types/funcionario";
  */
 export const buscar = async (query?: string) => {
   // Faz a requisição para o backend, passando a query como parâmetro se existir
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/funcionario${
-      query ? "?query=" + query : ""
-    }`,
-    { method: "GET" }
-  );
+  const res = await fetch(`${URL_BASE}${query ? "?query=" + query : ""}`, {
+    method: "GET",
+  });
 
   if (!res.ok) {
-    throw new Error("Failed to fetch data");
+    const error = await res.text();
+    throw new Error(error);
   }
 
   return res.json();
 };
 
 export const buscarUm = async (id: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/funcionario/${id}`,
-    { method: "GET" }
-  );
+  const res = await fetch(`${URL_BASE}/${id}`, { method: "GET" });
   if (!res.ok) {
-    throw new Error("Failed to fetch data");
+    const error = await res.text();
+    throw new Error(error);
   }
 
   const funcionario = buildFuncionario(await res.json());
   return funcionario;
 };
 
-export const salvar = async (data: any, id?: string) => {
-  const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/funcionario/${id ?? ""}`,
-    {
-      method: id ? "PATCH" : "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    }
-  );
+export const salvar = async (data: FuncionarioDao, id: string = "") => {
+  const res = await fetch(`${URL_BASE}/${id}`, {
+    method: id == "" ? "POST" : "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
 
   if (!res.ok) {
     const error = await res.text();
@@ -60,7 +55,7 @@ export const salvar = async (data: any, id?: string) => {
 };
 
 export const deletar = async (id: string) => {
-  await fetch(process.env.NEXT_PUBLIC_BACKEND_URL + "/funcionario/" + id, {
+  await fetch(`${URL_BASE}/${id}`, {
     method: "DELETE",
   });
 

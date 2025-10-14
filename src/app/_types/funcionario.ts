@@ -13,3 +13,5 @@ export const buildFuncionario = (data: any): Funcionario => {
     dataAdmissao: new Date(data.dataAdmissao).toISOString().split("T")[0],
   };
 };
+
+export type FuncionarioDao = Omit<Funcionario, "_id">;
